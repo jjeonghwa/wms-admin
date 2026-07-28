@@ -5,15 +5,25 @@ const app = express();
 const PORT = 3000;
 
 app.use(express.json());
+
+// 🎨 중요: Express가 public 폴더 안의 style.css를 올바른 절대경로로 찾아가도록 수정했습니다.
 app.use(express.static(path.join(__dirname, 'public')));
 
+// JSON 데이터 파일 경로 명확화
 const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 const HISTORY_FILE = path.join(__dirname, 'history.json');
 
-const readJSON = (file) => JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
+const readJSON = (file) => {
+    try {
+        return JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
+    } catch (e) {
+        return [];
+    }
+};
+
 const writeJSON = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// 📦 1. 실시간 보유 자산 및 바코드/로케이션 스태터스 조회
+// 📦 1. 실시간 보유 자산 조회
 app.get('/api/inventory', (req, res) => {
     const products = readJSON(PRODUCTS_FILE);
     const history = readJSON(HISTORY_FILE);
@@ -32,7 +42,7 @@ app.get('/api/inventory', (req, res) => {
                 .map(h => h.expirationDate)
                 .filter(exp => exp)
                 .sort();
-            if(sortedExp.length > 0) closeExpiration = sortedExp;
+            if(sortedExp.length > 0) closeExpiration = sortedExp[0]; // 배열의 첫 번째 임박일
         }
 
         prodHistory.forEach(action => {
@@ -63,12 +73,11 @@ app.get('/api/inventory', (req, res) => {
     res.json({ inventory: inventoryStatus, history: history.reverse() });
 });
 
-// ➕ 2. 신규 SKU 마스터 등록 (바코드 데이터 포함)
+// ➕ 2. 신규 SKU 마스터 등록
 app.post('/api/products', (req, res) => {
     const { name, barcode } = req.body;
     const products = readJSON(PRODUCTS_FILE);
     
-    // 바코드 중복 검사
     if (products.some(p => p.barcode === barcode)) {
         return res.status(400).json({ error: "이미 등록된 바코드 번호입니다." });
     }
@@ -76,14 +85,14 @@ app.post('/api/products', (req, res) => {
     const newProduct = { 
         id: 'SKU-' + Date.now().toString().slice(-6), 
         name,
-        barcode: barcode || 'BC-' + Date.now().toString().slice(-4) // 바코드 미입력 시 임시 생성
+        barcode: barcode || 'BC-' + Date.now().toString().slice(-4)
     };
     products.push(newProduct);
     writeJSON(PRODUCTS_FILE, products);
     res.status(201).json(newProduct);
 });
 
-// 🔄 3. 물류 트랜잭션 기록 API
+// 🔄 3. 물류 트랜잭션 기록
 app.post('/api/transaction', (req, res) => {
     const { productId, type, quantity, price, expirationDate, location, note } = req.body;
     const history = readJSON(HISTORY_FILE);
@@ -102,7 +111,7 @@ app.post('/api/transaction', (req, res) => {
 
     history.push(newLog);
     writeJSON(HISTORY_FILE, history);
-    res.status(201).json({ message: "WMS 로깅 시스템 반영 완료", log: newLog });
+    res.status(201).json({ message: "WMS 원장 반영 완료", log: newLog });
 });
 
 app.listen(PORT, () => console.log(`🚀 Open-Source WMS 구동 중: http://localhost:${PORT}`));

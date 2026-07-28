@@ -1,0 +1,29 @@
+[
+  {
+    "id": "ADM-1001",
+    "adminName": "김정화 관리자",
+    "role": "관리자",
+    "employeeType": "정직원",
+    "department": "총괄 운영본부",
+    "createdAt": "2026-07-29",
+    "attendance": []
+  },
+  {
+    "id": "EMP-2001",
+    "adminName": "김정직 사원",
+    "role": "사원들(일반)",
+    "employeeType": "정직원",
+    "department": "아웃바운드 파트",
+    "createdAt": "2026-07-29",
+    "attendance": []
+  },
+  {
+    "id": "TMP-3001",
+    "adminName": "박단기 일용직",
+    "role": "사원들(일반)",
+    "employeeType": "단기직",
+    "department": "재고조사 및 반품",
+    "createdAt": "2026-07-29",
+    "attendance": []
+  }
+]

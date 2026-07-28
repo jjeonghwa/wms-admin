@@ -13,7 +13,7 @@ const HISTORY_FILE = path.join(__dirname, 'history.json');
 const readJSON = (file) => JSON.parse(fs.readFileSync(file, 'utf8') || '[]');
 const writeJSON = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// 📦 1. 글로벌 표준 실시간 자산 및 랙(Rack)별 로케이션 현황 조회
+// 📦 1. 실시간 보유 자산 및 바코드/로케이션 스태터스 조회
 app.get('/api/inventory', (req, res) => {
     const products = readJSON(PRODUCTS_FILE);
     const history = readJSON(HISTORY_FILE);
@@ -51,6 +51,7 @@ app.get('/api/inventory', (req, res) => {
         return {
             id: prod.id,
             name: prod.name,
+            barcode: prod.barcode || '등록없음',
             currentStock,
             avgInboundPrice,
             totalAssetValue: currentStock * avgInboundPrice,
@@ -62,17 +63,27 @@ app.get('/api/inventory', (req, res) => {
     res.json({ inventory: inventoryStatus, history: history.reverse() });
 });
 
-// 신규 SKU 등록
+// ➕ 2. 신규 SKU 마스터 등록 (바코드 데이터 포함)
 app.post('/api/products', (req, res) => {
-    const { name } = req.body;
+    const { name, barcode } = req.body;
     const products = readJSON(PRODUCTS_FILE);
-    const newProduct = { id: 'SKU-' + Date.now().toString().slice(-6), name };
+    
+    // 바코드 중복 검사
+    if (products.some(p => p.barcode === barcode)) {
+        return res.status(400).json({ error: "이미 등록된 바코드 번호입니다." });
+    }
+
+    const newProduct = { 
+        id: 'SKU-' + Date.now().toString().slice(-6), 
+        name,
+        barcode: barcode || 'BC-' + Date.now().toString().slice(-4) // 바코드 미입력 시 임시 생성
+    };
     products.push(newProduct);
     writeJSON(PRODUCTS_FILE, products);
     res.status(201).json(newProduct);
 });
 
-// 🔄 2. 트랜잭션 API (표준 사양 버전)
+// 🔄 3. 물류 트랜잭션 기록 API
 app.post('/api/transaction', (req, res) => {
     const { productId, type, quantity, price, expirationDate, location, note } = req.body;
     const history = readJSON(HISTORY_FILE);

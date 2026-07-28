@@ -4,201 +4,204 @@
     <meta charset="UTF-8">
     <meta name="google" content="notranslate">
     <title>Next-Gen Fulfillment WMS</title>
-    <!-- 🎨 기존 스타일시트 경로 그대로 유지 -->
     <link rel="stylesheet" href="/css/style.css">
     <script src="https://unpkg.com"></script>
-    <style>
-        /* 메뉴 버튼들을 예쁘게 고정하기 위한 최소한의 추가 스타일 */
-        .wms-menu-bar {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #edf2f7;
-            padding-bottom: 15px;
-        }
-        .wms-menu-bar button {
-            width: auto;
-            padding: 10px 24px;
-        }
-        .wms-menu-bar button.inactive {
-            background: #718096;
-        }
-        .wms-menu-bar button.inactive:hover {
-            background: #4a5568;
-        }
-        .view-section {
-            display: none;
-        }
-        .view-section.active {
-            display: grid;
-        }
-    </style>
 </head>
 <body>
-<div class="container">
-    
-    <!-- 🌐 글로벌 상단 메뉴 시스템 구역 -->
-    <div class="box full-width" style="background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%); color: white;">
-        <h1 style="margin: 0; font-size: 24px;">🌐 Next-Gen Fulfillment WMS Dashboard</h1>
-        <p style="margin: 5px 0 0 0; opacity: 0.8; font-size: 14px;">실시간 하드웨어 PDA 카메라 스캔 연동 및 지능형 자산 통제 원장 구조</p>
-    </div>
 
-    <!-- 🧭 상단 메뉴 전환 바 (버튼 형태 메뉴) -->
-    <div class="full-width wms-menu-bar">
-        <button onclick="switchMenu('inventory-view')" id="menu-inventory">📦 재고 관리 콘솔 메뉴</button>
-        <button onclick="switchMenu('admin-view')" id="menu-admin" class="inactive">👥 운영진 관리 설정 메뉴</button>
-    </div>
+    <!-- 🧭 1. [왼쪽 고정 프레임] 인디고 블루 메뉴바 구역 -->
+    <nav class="sidebar-frame">
+        <div class="sidebar-title">⚡ WMS ENTERPRISE</div>
+        <button onclick="switchMenu('inventory-view')" id="menu-inventory" class="menu-btn active">📦 실시간 재고 관리</button>
+        <button onclick="switchMenu('admin-view')" id="menu-admin" class="menu-btn">👥 WMS 운영진 설정</button>
+    </nav>
 
-    <!-- ================= 메뉴 1: 물류 / 재고 통제반 ================= -->
-    <div id="inventory-view" class="view-section active">
-        <!-- 상품 마스터 세션 -->
-        <div class="box">
-            <h3>📦 신규 SKU 마스터 세션 등록</h3>
-            <form id="productForm">
-                <div class="form-group">
-                    <label>상품 마스터 명칭</label>
-                    <input type="text" id="newProductName" required placeholder="예: 프리미엄 저온 가공유 1L">
-                </div>
-                <div class="form-group">
-                    <label>바코드 번호 (EAN/UPC/QR)</label>
-                    <input type="text" id="newProductBarcode" required placeholder="예: 8801234567890">
-                </div>
-                <button type="submit" style="background: #4a5568;">SKU 및 바코드 매핑 생성</button>
-            </form>
-            <h3 style="margin-top: 30px;">📷 스마트 PDA 카메라 스캐너 연동</h3>
-            <div id="reader" style="width: 100%;"></div>
-        </div>
+    <!-- 🖥️ 2. [오른쪽 독립 스크롤 프레임] 메인 오퍼레이션 콘솔 구역 -->
+    <main class="content-frame">
+        
+        <!-- ================= 메뉴 섹션 1: 실시간 재고 관리 콘솔 ================= -->
+        <div id="inventory-view" class="view-section active">
+            
+            <div class="content-header">
+                <h1>실시간 재고 현황 관리</h1>
+            </div>
 
-        <!-- 입출고 트랜잭션 -->
-        <div class="box">
-            <h3>🔄 인바운드 진열 / 아웃바운드 픽킹</h3>
-            <form id="txForm">
-                <div class="form-group">
-                    <label>선택된 SKU 상품</label>
-                    <select id="txProduct" required></select>
-                </div>
-                <div class="form-group">
-                    <label>작업 프로세스 분류</label>
-                    <select id="txType" required>
-                        <option value="입고">📥 인바운드 진열 (Inbound Staging)</option>
-                        <option value="출고">📤 아웃바운드 픽킹 (Outbound Picking)</option>
+            <!-- 이미지 스타일의 상단 조건 검색 필터 바 -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <select id="filterYearMonth">
+                        <option value="2026-07">2026-07</option>
+                        <option value="2026-06">2026-06</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>수량 (EA)</label>
-                    <input type="number" id="txQuantity" value="1" min="1" required>
-                </div>
-                <div class="form-group">
-                    <label>정산 단가 (원)</label>
-                    <input type="number" id="txPrice" placeholder="매입 및 매출 가치 기준" required>
-                </div>
-                <div class="form-group" id="expGroup">
-                    <label>소비 기한 기준일 (Freshness Expiration)</label>
-                    <input type="date" id="txExpiration">
-                </div>
-                <div class="form-group">
-                    <label>보관 로케이션 번호 (Tote / Rack Code)</label>
-                    <input type="text" id="txLocation" placeholder="예: TOTE-A01 또는 COLD-ZONE-03">
-                </div>
-                <div class="form-group">
-                    <label>시스템 감사 비고 (Audit Trail)</label>
-                    <input type="text" id="txNote" placeholder="예: 정기 대량 매입 입고 / 온라인 주문 패킹 출고">
-                </div>
-                <button type="submit">물류 원장 확정 (JSON 반영)</button>
-            </form>
-        </div>
-
-        <!-- 자산 현황판 -->
-        <div class="box full-width">
-            <h3>📊 실시간 로케이션별 보유 자산 및 소비기한 스태터스</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>SKU Code</th>
-                        <th>상품명</th>
-                        <th>매핑 바코드</th>
-                        <th>현재고 수량</th>
-                        <th>평균 가치단가</th>
-                        <th>총 재고자산액</th>
-                        <th>할당 로케이션</th>
-                        <th>최우선 소비기한</th>
-                    </tr>
-                </thead>
-                <tbody id="inventoryTable"></tbody>
-            </table>
-        </div>
-
-        <!-- 타임라인 로그 -->
-        <div class="box full-width">
-            <h3>📜 시스템 트랜잭션 기록 로그 (Audit Trail)</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>확정 타임스탬프</th>
-                        <th>상품명</th>
-                        <th>구분</th>
-                        <th>수량</th>
-                        <th>단가</th>
-                        <th>할당 로케이션</th>
-                        <th>소비기한</th>
-                        <th>비고</th>
-                    </tr>
-                </thead>
-                <tbody id="historyTable"></tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- ================= 메뉴 2: 운영 관리자 등록반 ================= -->
-    <div id="admin-view" class="view-section">
-        <div class="box">
-            <h3>👥 신규 WMS 현황 운영 관리자 등록</h3>
-            <form id="adminForm">
-                <div class="form-group">
-                    <label>관리자 이름</label>
-                    <input type="text" id="adminName" required placeholder="예: 홍길동">
-                </div>
-                <div class="form-group">
-                    <label>배정 권한 등급(Role)</label>
-                    <select id="adminRole" required>
-                        <option value="총괄 매니저">👑 총괄 매니저 (Center Master)</option>
-                        <option value="현장 매니저">🔑 현장 매니저 (Floor Manager)</option>
-                        <option value="물류 오퍼레이터">🏃 오퍼레이터 (Operator)</option>
+                <div class="filter-group">
+                    <select>
+                        <option value="all">전체 활성 SKU</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>소속 물류 세션 부서</label>
-                    <select id="adminDept" required>
-                        <option value="인바운드 파트">📥 인바운드 파트 (Inbound)</option>
-                        <option value="아웃바운드 파트">📤 아웃바운드 파트 (Outbound)</option>
-                        <option value="재고조사 및 반품">⚖️ 재고 자산 통제 및 반품</option>
-                    </select>
+            </div>
+
+            <!-- 입력 제어 보드 (2열 그리드 구조로 깔끔하게 정리) -->
+            <div class="box">
+                <h3>🔄 물류 트랜잭션 수동 인가 및 SKU 매핑</h3>
+                <div class="form-grid">
+                    <div>
+                        <h4>[Step 1] 신규 SKU 마스터 등록</h4>
+                        <form id="productForm">
+                            <div class="form-group">
+                                <label>상품 마스터 명칭</label>
+                                <input type="text" id="newProductName" required placeholder="예: 프리미엄 저온 가공유 1L">
+                            </div>
+                            <div class="form-group">
+                                <label>바코드 일련번호 (EAN/UPC)</label>
+                                <input type="text" id="newProductBarcode" required placeholder="예: 8801234567890">
+                            </div>
+                            <button type="submit" style="background: #475569;">SKU 마스터 등록 생성</button>
+                        </form>
+                        
+                        <h4 style="margin-top:25px;">📷 스마트 PDA 카메라 스캐너 엔진</h4>
+                        <div id="reader"></div>
+                    </div>
+                    
+                    <div>
+                        <h4>[Step 2] 인바운드 진열 / 아웃바운드 픽킹 실행</h4>
+                        <form id="txForm">
+                            <div class="form-group">
+                                <label>대상 SKU 상품 선택</label>
+                                <select id="txProduct" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label>작업 프로세스 분류</label>
+                                <select id="txType" required>
+                                    <option value="입고">📥 인바운드 진열 (Inbound Staging)</option>
+                                    <option value="출고">📤 아웃바운드 픽킹 (Outbound Picking)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>작업 수량 (EA)</label>
+                                <input type="number" id="txQuantity" value="1" min="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label>정산 단가 (원)</label>
+                                <input type="number" id="txPrice" placeholder="매입 및 매출 단가 입력" required>
+                            </div>
+                            <div class="form-group" id="expGroup">
+                                <label>소비 기한 기준일 (Freshness Expiration)</label>
+                                <input type="date" id="txExpiration">
+                            </div>
+                            <div class="form-group">
+                                <label>보관 로케이션 번호 (Tote / Rack Code)</label>
+                                <input type="text" id="txLocation" placeholder="예: TOTE-A01 / COLD-ZONE-03">
+                            </div>
+                            <div class="form-group">
+                                <label>시스템 감사 비고 (Audit Trail)</label>
+                                <input type="text" id="txNote" placeholder="예: 정기 대량 매입 입고 / 온라인 주문 패킹 출고">
+                            </div>
+                            <button type="submit">물류 원장 확정 (JSON 실시간 반영)</button>
+                        </form>
+                    </div>
                 </div>
-                <button type="submit" style="background: #2d3748;">관리 권한 인가</button>
-            </form>
+            </div>
+
+            <!-- 실시간 대형 자산 현황 그리드 테이블 -->
+            <div class="box">
+                <h3>📊 실시간 로케이션별 보유 자산 및 소비기한 스태터스</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU Code</th>
+                            <th>상품명</th>
+                            <th>매핑 바코드</th>
+                            <th>현재고 수량</th>
+                            <th>평균 가치단가</th>
+                            <th>총 재고자산액</th>
+                            <th>할당 로케이션</th>
+                            <th>최우선 소비기한</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTable"></tbody>
+                </table>
+            </div>
+
+            <!-- 시스템 처리 타임라인 로그 원장 -->
+            <div class="box">
+                <h3>📜 시스템 트랜잭션 기록 로그 (Audit Trail)</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>확정 타임스탬프</th>
+                            <th>상품명</th>
+                            <th>구분</th>
+                            <th>수량</th>
+                            <th>단가</th>
+                            <th>할당 로케이션</th>
+                            <th>소비기한</th>
+                            <th>비고</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyTable"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="box">
-            <h3>📋 현재 인가된 WMS 운영 매니지먼트 리스트</h3>
-            <table>
-                <thead>
-                    <tr>
-                        <th>사원 ID</th>
-                        <th>성명</th>
-                        <th>권한 등급</th>
-                        <th>소속 세션</th>
-                        <th>권한 부여일</th>
-                        <th>작업</th>
-                    </tr>
-                </thead>
-                <tbody id="adminTable"></tbody>
-            </table>
+        <!-- ================= 메뉴 섹션 2: 운영 관리자 설정 콘솔 ================= -->
+        <div id="admin-view" class="view-section">
+            <div class="content-header">
+                <h1>WMS 운영진 권한 인가 설정</h1>
+            </div>
+
+            <div class="box" style="display: grid; grid-template-columns: 1fr 2fr; gap: 25px;">
+                <!-- 운영진 등록 폼 -->
+                <div>
+                    <h3>👥 신규 권한 매니저 인가 등록</h3>
+                    <form id="adminForm">
+                        <div class="form-group">
+                            <label>관리자 성명</label>
+                            <input type="text" id="adminName" required placeholder="예: 홍길동">
+                        </div>
+                        <div class="form-group">
+                            <label>배정 권한 등급(Role)</label>
+                            <select id="adminRole" required>
+                                <option value="총괄 매니저">👑 총괄 매니저 (Center Master)</option>
+                                <option value="현장 매니저">🔑 현장 매니저 (Floor Manager)</option>
+                                <option value="물류 오퍼레이터">🏃 오퍼레이터 (Operator)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>소속 물류 세션 부서</label>
+                            <select id="adminDept" required>
+                                <option value="인바운드 파트">📥 인바운드 파트 (Inbound)</option>
+                                <option value="아웃바운드 파트">📤 아웃바운드 파트 (Outbound)</option>
+                                <option value="재고조사 및 반품">⚖️ 재고 자산 통제 및 반품</option>
+                            </select>
+                        </div>
+                        <button type="submit" style="background: #1e293b; width: 100%; margin-top: 10px;">관리 권한 인가</button>
+                    </form>
+                </div>
+
+                <!-- 운영진 목록 현황판 -->
+                <div>
+                    <h3>📋 현재 인가된 WMS 운영 매니지먼트 리스트</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>사원 ID</th>
+                                <th>성명</th>
+                                <th>권한 등급</th>
+                                <th>소속 세션</th>
+                                <th>권한 부여일</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTable"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-    </div>
 
-</div>
+    </main>
 
-<!-- ⚙️ 완전히 외부로 독립 분리된 기능 스크립트 로드 -->
-<script src="/js/app.js"></script>
+    <!-- 분리된 자바스크립트 소스 연결 -->
+    <script src="/js/app.js"></script>
 </body>
 </html>

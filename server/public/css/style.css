@@ -1,123 +1,236 @@
-/* public/style.css */
+/* public/css/style.css */
 body {
-    font-family: sans-serif;
-    padding: 20px;
-    background: #f4f5f7;
-    color: #333;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f8fafc;
+    color: #334155;
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
 }
 
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
+/* 🧭 [왼쪽 고정 프레임] 이미지와 동일한 인디고 블루 내비게이션 바 */
+.sidebar-frame {
+    width: 220px;
+    background: #1e3a8a; /* 이미지의 깊은 블루 색상 반영 */
+    color: #f1f5f9;
+    display: flex;
+    flex-direction: column;
+    padding: 24px 0;
+    box-sizing: border-box;
+}
+
+.sidebar-title {
+    padding: 0 24px 20px 24px;
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #2563eb;
+    color: #93c5fd;
+}
+
+.menu-btn {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    padding: 14px 24px;
+    text-align: left;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menu-btn:hover {
+    background: #1d4ed8;
+    color: #ffffff;
+}
+
+.menu-btn.active {
+    background: #1d4ed8;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* 🖥️ [오른쪽 독립 스크롤 프레임] 메인 관리자 콘솔 */
+.content-frame {
+    flex: 1;
+    padding: 30px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    height: 100%;
+    background: #f8fafc;
+}
+
+/* 윗부분 타이틀 & 상단 토글/필터 구역 */
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.content-header h1 {
+    font-size: 24px;
+    color: #1e293b;
+    margin: 0;
+    font-weight: 700;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-bar select, .filter-bar input {
+    padding: 6px 12px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #334155;
+    background: #ffffff;
+}
+
+/* 🧱 그리드 뷰 세션 (입력창과 데이터 표 배치) */
+.view-section {
+    display: none;
+}
+
+.view-section.active {
+    display: grid;
+    grid-template-columns: 1fr; /* 이미지처럼 넓게 표 형태로 배치 */
+    gap: 25px;
+}
+
+/* 데이터가 들어가는 하얀색 카드 박스 */
+.box {
+    background: white;
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+/* 2열 정렬용 내부 그리드 폼 */
+.form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
-}
-
-.box {
-    background: white;
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-}
-
-.full-width {
-    grid-column: span 2;
-}
-
-h2, h3 {
-    margin-top: 0;
-    color: #2c3e50;
-    border-bottom: 2px solid #edf2f7;
-    padding-bottom: 10px;
+    margin-bottom: 20px;
 }
 
 .form-group {
-    margin-bottom: 14px;
+    margin-bottom: 12px;
 }
 
 label {
     display: block;
     margin-bottom: 6px;
-    font-weight: bold;
-    font-size: 14px;
-    color: #4a5568;
+    font-weight: 6px;
+    font-size: 13px;
+    color: #64748b;
 }
 
 input, select {
     width: 100%;
     padding: 10px;
     box-sizing: border-box;
-    border: 1px solid #cbd5e0;
-    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
     font-size: 14px;
+    background: #f8fafc;
 }
 
 input:focus, select:focus {
-    border-color: #3182ce;
+    border-color: #3b82f6;
     outline: none;
+    background: #ffffff;
 }
 
 button {
-    background: #3182ce;
+    background: #2563eb;
     color: white;
-    padding: 12px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-weight: bold;
-    width: 100%;
-    font-size: 15px;
+    font-weight: 600;
+    font-size: 14px;
+    transition: background 0.2s;
 }
 
 button:hover {
-    background: #2b6cb0;
+    background: #1d4ed8;
 }
 
+/* 📊 대형 물류 시스템용 데이터 그리드 테이블 스타일 */
 table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 15px;
-    font-size: 14px;
+    margin-top: 10px;
+    font-size: 13px;
 }
 
 th, td {
-    border: 1px solid #e2e8f0;
-    padding: 12px;
+    border-bottom: 1px solid #edf2f7;
+    padding: 14px 16px;
     text-align: left;
 }
 
 th {
-    background: #f7fafc;
-    color: #4a5568;
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
 }
 
+tr:hover {
+    background: #f1f5f9;
+}
+
+/* 처리 상태 뱃지 스타일 */
 .badge-in {
-    background: #c6f6d5;
-    color: #22543d;
+    background: #dcfce7;
+    color: #15803d;
     padding: 4px 8px;
     border-radius: 6px;
-    font-weight: bold;
-    font-size: 12px;
+    font-weight: 600;
 }
 
 .badge-out {
-    background: #fed7d7;
-    color: #742a2a;
+    background: #fee2e2;
+    color: #b91c1c;
     padding: 4px 8px;
     border-radius: 6px;
-    font-weight: bold;
-    font-size: 12px;
+    font-weight: 600;
 }
 
 .alert-exp {
-    color: #dd6b20;
-    font-weight: bold;
+    color: #ea580c;
+    font-weight: 600;
 }
 
 #reader {
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
-    border: 1px dashed #cbd5e0;
-    background: #fafafa;
+    border: 2px dashed #cbd5e1;
+    background: #f8fafc;
+    max-width: 400px;
+    margin: 15px 0;
 }

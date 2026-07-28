@@ -1,4 +1,4 @@
-javascriptconst express = require('express');
+const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const app = express();
@@ -9,15 +9,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 const PRODUCTS_FILE = path.join(__dirname, 'products.json');
 const HISTORY_FILE = path.join(__dirname, 'history.json');
-const ADMINS_FILE = path.join(__dirname, 'admins.json'); // 👈 신규 관리자 파일 경로
+const ADMINS_FILE = path.join(__dirname, 'admins.json');
 
 const readJSON = (file) => {
-    try { return JSON.parse(fs.readFileSync(file, 'utf8') || '[]'); } 
-    catch (e) { return []; }
+    try { 
+        return JSON.parse(fs.readFileSync(file, 'utf8') || '[]'); 
+    } catch (e) { 
+        return []; 
+    }
 };
-const writeJSON = (file, data) => fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
-// 📦 1. 실시간 보유 자산 및 로케이션 스태터스 조회
+const writeJSON = (file, data) => {
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+};
+
+// 📦 1. 실시간 보유 자산 및 로케이션 스태터스 조회 API
 app.get('/api/inventory', (req, res) => {
     const products = readJSON(PRODUCTS_FILE);
     const history = readJSON(HISTORY_FILE);
@@ -60,10 +66,10 @@ app.get('/api/inventory', (req, res) => {
         };
     });
 
-    res.json({ inventory: inventoryStatus, history: history.reverse() });
+    res.json({ inventory: inventoryStatus, history: history });
 });
 
-// 상품 등록
+// ➕ 2. 신규 SKU 마스터 등록 API
 app.post('/api/products', (req, res) => {
     const { name, barcode } = req.body;
     const products = readJSON(PRODUCTS_FILE);
@@ -75,7 +81,7 @@ app.post('/api/products', (req, res) => {
     res.status(201).json(newProduct);
 });
 
-// 물류 트랜잭션 기록
+// 🔄 3. 물류 트랜잭션 기록 API
 app.post('/api/transaction', (req, res) => {
     const { productId, type, quantity, price, expirationDate, location, note } = req.body;
     const history = readJSON(HISTORY_FILE);
@@ -92,12 +98,12 @@ app.post('/api/transaction', (req, res) => {
     res.status(201).json({ message: "WMS 원장 반영 완료", log: newLog });
 });
 
-// 👥 [신규] 4. WMS 관리자 계정 목록 조회 API
+// 👥 4. WMS 관리자 계정 목록 조회 API
 app.get('/api/admins', (req, res) => {
     res.json(readJSON(ADMINS_FILE));
 });
 
-// 👥 [신규] 5. WMS 관리자 신규 등록 API
+// 👥 5. WMS 관리자 신규 등록 API
 app.post('/api/admins', (req, res) => {
     const { adminName, role, department } = req.body;
     const admins = readJSON(ADMINS_FILE);
@@ -105,8 +111,8 @@ app.post('/api/admins', (req, res) => {
     const newAdmin = {
         id: 'ADM-' + Date.now().toString().slice(-4),
         adminName,
-        role,       // 총괄관리자, 현장매니저, 피킹담당 등
-        department, // 입고파트, 출고파트, 반품/재고조사 등
+        role,       
+        department, 
         createdAt: new Date().toLocaleDateString('ko-KR')
     };
 
@@ -115,7 +121,7 @@ app.post('/api/admins', (req, res) => {
     res.status(201).json(newAdmin);
 });
 
-// 👥 [신규] 6. WMS 관리자 권한 삭제 API
+// 👥 6. WMS 관리자 권한 삭제 API
 app.delete('/api/admins/:id', (req, res) => {
     const { id } = req.params;
     let admins = readJSON(ADMINS_FILE);
